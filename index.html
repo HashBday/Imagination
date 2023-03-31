@@ -1,73 +1,16 @@
-import React, { useState } from 'react';
-import { useDrop } from 'react-dnd';
-import $ from 'jquery';
-
-function CustomPortal() {
-  const [pages, setPages] = useState([]);
-  const [{ isOver }, drop] = useDrop({
-    accept: 'webpage',
-    drop: (item, monitor) => {
-      const { id, width, height } = item;
-      const url = prompt('请输入网页 URL：');
-      if (url) {
-        setPages(prevPages => [...prevPages, { id, url, width, height }]);
-      }
-    },
-    collect: monitor => ({
-      isOver: monitor.isOver(),
-    }),
-  });
-
-  const handleDeletePage = id => {
-    setPages(prevPages => prevPages.filter(page => page.id !== id));
-  };
-
-  return (
-    <div
-      ref={drop}
-      style={{
-        width: '100%',
-        height: '100%',
-        backgroundColor: isOver ? '#EEE' : '#FFF',
-        display: 'flex',
-        flexWrap: 'wrap',
-      }}
-    >
-      {pages.map(page => (
-        <div
-          key={page.id}
-          style={{
-            width: page.width,
-            height: page.height,
-            margin: '10px',
-            position: 'relative',
-          }}
-        >
-          <iframe
-            src={page.url}
-            style={{ width: '100%', height: '100%' }}
-            onLoad={() => {
-              const $iframe = $(`#${page.id}`);
-              $iframe.contents().find('a').attr('target', '_blank');
-            }}
-          />
-          <button
-            style={{
-              position: 'absolute',
-              top: '5px',
-              right: '5px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-            onClick={() => handleDeletePage(page.id)}
-          >
-            X
-          </button>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export default CustomPortal;
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>定制化浏览器</title>
+</head>
+<body>
+  <header>
+    <!-- 在这里添加工具栏、标签栏等组件 -->
+  </header>
+  <main>
+    <!-- 在这里添加 iframe 元素，以嵌入其他网页 -->
+    <iframe src="https://www.example.com"></iframe>
+  </main>
+</body>
+</html>
