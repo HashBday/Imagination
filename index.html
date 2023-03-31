@@ -1,16 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>定制化浏览器</title>
+	<title>自定义浏览器</title>
+	<style>
+		/* 样式可以自定义 */
+		iframe {
+			display: block;
+			border: none;
+			width: 100%;
+			height: 500px;
+		}
+	</style>
 </head>
 <body>
-  <header>
-    <!-- 在这里添加工具栏、标签栏等组件 -->
-  </header>
-  <main>
-    <!-- 在这里添加 iframe 元素，以嵌入其他网页 -->
-    <iframe src="https://www.example.com"></iframe>
-  </main>
+	<h1>自定义浏览器</h1>
+
+	<!-- iframe 元素 -->
+	<iframe src="https://www.example.com"></iframe>
+
+	<!-- 用户可添加其他网页的按钮 -->
+	<button onclick="addPage()">添加网页</button>
+
+	<script>
+		function addPage() {
+			// 创建一个新的 iframe 元素
+			var newIframe = document.createElement('iframe');
+			newIframe.src = prompt('请输入网页 URL：');
+			newIframe.width = '100%';
+			newIframe.height = '500px';
+			newIframe.style.display = 'block';
+			newIframe.style.border = 'none';
+
+			// 将新的 iframe 添加到页面中
+			document.body.appendChild(newIframe);
+		}
+	</script>
 </body>
 </html>
