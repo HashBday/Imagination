@@ -4,11 +4,13 @@
 	<title>自定义浏览器</title>
 	<style>
 		/* 样式可以自定义 */
-		iframe {
-			display: block;
+		.frame {
+			position: absolute;
 			border: none;
-			width: 100%;
-			height: 500px;
+			background-color: #f0f0f0;
+			z-index: 1;
+			resize: both;
+			overflow: auto;
 		}
 	</style>
 </head>
@@ -16,23 +18,61 @@
 	<h1>自定义浏览器</h1>
 
 	<!-- iframe 元素 -->
-	<iframe src="https://www.example.com"></iframe>
+	<div class="frame" style="width: 800px; height: 500px; left: 0; top: 0;">
+		<iframe src="https://www.example.com" style="width: 100%; height: 100%;"></iframe>
+	</div>
 
 	<!-- 用户可添加其他网页的按钮 -->
 	<button onclick="addPage()">添加网页</button>
 
 	<script>
 		function addPage() {
-			// 创建一个新的 iframe 元素
-			var newIframe = document.createElement('iframe');
-			newIframe.src = prompt('请输入网页 URL：');
-			newIframe.width = '100%';
-			newIframe.height = '500px';
-			newIframe.style.display = 'block';
-			newIframe.style.border = 'none';
+			// 创建一个新的 div 元素
+			var newDiv = document.createElement('div');
+			newDiv.className = 'frame';
+			newDiv.style.width = '800px';
+			newDiv.style.height = '500px';
+			newDiv.style.left = '0';
+			newDiv.style.top = '0';
+			newDiv.style.display = 'block';
+			newDiv.style.border = 'none';
+			newDiv.innerHTML = '<iframe src="' + prompt('请输入网页 URL：') + '" style="width: 100%; height: 100%;"></iframe>';
 
-			// 将新的 iframe 添加到页面中
-			document.body.appendChild(newIframe);
+			// 将新的 div 添加到页面中
+			document.body.appendChild(newDiv);
+
+			// 给新的 div 添加拖拽功能
+			dragElement(newDiv);
+		}
+
+		function dragElement(element) {
+			var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+			element.onmousedown = dragMouseDown;
+
+			function dragMouseDown(e) {
+				e = e || window.event;
+				e.preventDefault();
+				pos3 = e.clientX;
+				pos4 = e.clientY;
+				document.onmouseup = closeDragElement;
+				document.onmousemove = elementDrag;
+			}
+
+			function elementDrag(e) {
+				e = e || window.event;
+				e.preventDefault();
+				pos1 = pos3 - e.clientX;
+				pos2 = pos4 - e.clientY;
+				pos3 = e.clientX;
+				pos4 = e.clientY;
+				element.style.top = (element.offsetTop - pos2) + "px";
+				element.style.left = (element.offsetLeft - pos1) + "px";
+			}
+
+			function closeDragElement() {
+				document.onmouseup = null;
+				document.onmousemove = null;
+			}
 		}
 	</script>
 </body>
