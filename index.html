@@ -1,91 +1,49 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>自定义浏览器</title>
-	<style>
-		/* 样式可以自定义 */
-		.iframe-wrapper {
-			position: absolute;
-			left: 0;
-			top: 0;
-			width: 100%;
-			height: 100%;
-			display: flex;
-			flex-wrap: wrap;
-		}
-		iframe {
-			display: block;
-			border: none;
-			resize: both;
-			overflow: auto;
-			margin: 10px;
-			background: #eee;
-			flex: 1;
-			min-width: 300px;
-			min-height: 200px;
-		}
-	</style>
-</head>
-<body>
-	<h1>自定义浏览器</h1>
+pragma solidity ^0.8.0;
 
-	<div class="iframe-wrapper">
-		<!-- iframe 元素 -->
-		<iframe src="https://www.example.com"></iframe>
-	</div>
+interface ERC20 {
+    function balanceOf(address account) external view returns (uint256);
+}
 
-	<!-- 用户可添加其他网页的按钮 -->
-	<button onclick="addPage()">添加网页</button>
+contract TopERC20Holders {
+    address public tokenAddress;
+    uint public numHoldersToRetrieve;
+    mapping(uint => address) public topHolders;
 
-	<script>
-		function addPage() {
-			// 创建一个新的 iframe 元素
-			var newIframe = document.createElement('iframe');
-			newIframe.src = prompt('请输入网页 URL：');
-			newIframe.style.display = 'block';
-			newIframe.style.border = 'none';
-			newIframe.style.resize = 'both';
-			newIframe.style.overflow = 'auto';
-			newIframe.style.margin = '10px';
-			newIframe.style.background = '#eee';
-			newIframe.style.flex = '1';
-			newIframe.style.minWidth = '300px';
-			newIframe.style.minHeight = '200px';
-			newIframe.addEventListener('mousedown', startDragging, false);
+    constructor(address _tokenAddress, uint _numHoldersToRetrieve) {
+        tokenAddress = _tokenAddress;
+        numHoldersToRetrieve = _numHoldersToRetrieve;
+    }
 
-			// 将新的 iframe 添加到页面中
-			var wrapper = document.querySelector('.iframe-wrapper');
-			wrapper.appendChild(newIframe);
-		}
+    function getTopHolders() public {
+        ERC20 token = ERC20(tokenAddress);
+        uint256 numHolders = numHoldersToRetrieve;
+        address[] memory holders = new address[](numHolders);
+        uint256[] memory balances = new uint256[](numHolders);
 
-		var currentIframe = null, startX = 0, startY = 0, startWidth = 0, startHeight = 0;
+        // Get the balance of all accounts holding the token
+        for (uint i = 0; i < numHolders; i++) {
+            address holder = address(i);
+            uint256 balance = token.balanceOf(holder);
 
-		function startDragging(e) {
-			currentIframe = e.target;
-			startX = e.clientX;
-			startY = e.clientY;
-			startWidth = parseInt(document.defaultView.getComputedStyle(currentIframe).width, 10);
-			startHeight = parseInt(document.defaultView.getComputedStyle(currentIframe).height, 10);
-			document.documentElement.addEventListener('mousemove', doDrag, false);
-			document.documentElement.addEventListener('mouseup', stopDragging, false);
-		}
+            // If this balance is higher than the lowest balance in the topHolders array,
+            // add it to the array and sort it
+            if (balance > balances[numHolders - 1]) {
+                holders[numHolders - 1] = holder;
+                balances[numHolders - 1] = balance;
+                for (uint j = numHolders - 1; j > 0; j--) {
+                    if (balances[j] > balances[j - 1]) {
+                        (holders[j], holders[j - 1]) = (holders[j - 1], holders[j]);
+                        (balances[j], balances[j - 1]) = (balances[j - 1], balances[j]);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
 
-		function doDrag(e) {
-			if (currentIframe) {
-				var newWidth = startWidth + e.clientX - startX;
-				var newHeight = startHeight + e.clientY - startY;
-				currentIframe.style.width = newWidth + 'px';
-				currentIframe.style.height = newHeight + 'px';
-			}
-		}
-
-		function stopDragging(e) {
-			if (currentIframe) {
-				document.documentElement.removeEventListener('mousemove', doDrag, false);
-				document.documentElement.removeEventListener('mouseup', stopDragging, false);
-				currentIframe = null;
-			}
-		}
-	</script>
-</body>
-</html>
+        // Save the top holders
+        for (uint i = 0; i < numHolders; i++) {
+            topHolders[i] = holders[i];
+        }
+    }
+}
