@@ -1,153 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hacker Browser</title>
-    <style>
-      /* 设置页面背景颜色为白色，字体颜色为黑色 */
-      body {
-        background-color: white;
-        color: black;
-        font-family: Arial, sans-serif;
+import React, { useState } from 'react';
+import { useDrop } from 'react-dnd';
+import $ from 'jquery';
+
+function CustomPortal() {
+  const [pages, setPages] = useState([]);
+  const [{ isOver }, drop] = useDrop({
+    accept: 'webpage',
+    drop: (item, monitor) => {
+      const { id, width, height } = item;
+      const url = prompt('请输入网页 URL：');
+      if (url) {
+        setPages(prevPages => [...prevPages, { id, url, width, height }]);
       }
-      
-      /* 设置iframe的样式 */
-      .frame {
-        width: 100%;
-        height: 100%;
-        border: none;
-      }
-      
-      /* 添加iframe容器的样式 */
-      .frame-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-      }
-      
-      /* 添加遮罩层的样式 */
-      .overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(255, 255, 255, 0.8);
-        z-index: 2;
-        display: none;
-      }
-      
-      /* 添加调整大小的手柄的样式 */
-      .resize-handle {
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        background-color: #4caf50;
-        border: 2px solid #fff;
-        z-index: 3;
-        cursor: nwse-resize;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- 添加标题 -->
-    <h1>Hacker Browser</h1>
-    <!-- 添加用户输入网址的表单 -->
-    <form>
-      <label for="url">Enter URL:</label>
-      <input type="text" id="url" name="url" />
-      <button type="submit">Go</button>
-    </form>
-    <!-- 添加显示网页的iframe -->
-    <div class="frame-container">
-      <iframe class="frame" id="frame0"></iframe>
-      <div class="overlay"></div>
-      <div class="resize-handle"></div>
+    },
+    collect: monitor => ({
+      isOver: monitor.isOver(),
+    }),
+  });
+
+  const handleDeletePage = id => {
+    setPages(prevPages => prevPages.filter(page => page.id !== id));
+  };
+
+  return (
+    <div
+      ref={drop}
+      style={{
+        width: '100%',
+        height: '100%',
+        backgroundColor: isOver ? '#EEE' : '#FFF',
+        display: 'flex',
+        flexWrap: 'wrap',
+      }}
+    >
+      {pages.map(page => (
+        <div
+          key={page.id}
+          style={{
+            width: page.width,
+            height: page.height,
+            margin: '10px',
+            position: 'relative',
+          }}
+        >
+          <iframe
+            src={page.url}
+            style={{ width: '100%', height: '100%' }}
+            onLoad={() => {
+              const $iframe = $(`#${page.id}`);
+              $iframe.contents().find('a').attr('target', '_blank');
+            }}
+          />
+          <button
+            style={{
+              position: 'absolute',
+              top: '5px',
+              right: '5px',
+              backgroundColor: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            onClick={() => handleDeletePage(page.id)}
+          >
+            X
+          </button>
+        </div>
+      ))}
     </div>
-    <!-- 添加添加新网页的按钮 -->
-    <button id="add-button">Add Website</button>
-    
-    <script>
-      const addButton = document.getElementById('add-button');
-      const frameContainer = document.querySelector('.frame-container');
-      let frameCount = 1;
-      
-      // 点击“Add Website”按钮时，在frameContainer中添加一个新的iframe
-      addButton.addEventListener('click', () => {
-        const newFrame = document.createElement('iframe');
-        newFrame.classList.add('frame');
-        newFrame.id = 'frame' + frameCount;
-        frameCount++;
-        frameContainer.appendChild(newFrame);
-      });
-      
-      // 提交表单时，将输入的网址加载到当前的iframe中
-      const form = document.querySelector('form');
-      form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const url = document.getElementById('url').value;
-        const currentFrame = document.querySelector('.frame-container iframe:not(.overlay)');
-        currentFrame.src = url;
-      });
-      
-      // 点击iframe上的遮罩层时，隐藏遮罩层
-      const overlay = document.querySelector('.overlay');
-      overlay.addEventListener('click', () => {
-        overlay.style.display
-  'none';
-  });
-  
-  // 拖拽调整iframe大小
-  const resizeHandle = document.querySelector('.resize-handle');
-  let isResizing = false;
-  
-  // 开始拖拽时记录鼠标位置和iframe大小
-  resizeHandle.addEventListener('mousedown', (event) => {
-    isResizing = true;
-    const currentFrame = event.target.parentElement.querySelector('iframe');
-    const { offsetWidth, offsetHeight } = currentFrame;
-    const initialX = event.clientX;
-    const initialY = event.clientY;
-    const initialWidth = offsetWidth;
-    const initialHeight = offsetHeight;
-    
-    // 显示遮罩层
-    overlay.style.display = 'block';
-    
-    // 鼠标移动时调整iframe大小
-    document.addEventListener('mousemove', resize);
-    
-    // 结束拖拽时移除事件监听器
-    document.addEventListener('mouseup', () => {
-      isResizing = false;
-      overlay.style.display = 'none';
-      document.removeEventListener('mousemove', resize);
-    });
-    
-    function resize(event) {
-      if (!isResizing) return;
-      
-      // 计算鼠标移动距离和调整后的iframe大小
-      const dx = event.clientX - initialX;
-      const dy = event.clientY - initialY;
-      const newWidth = initialWidth + dx;
-      const newHeight = initialHeight + dy;
-      
-      // 将新的iframe大小应用到样式中
-      currentFrame.style.width = newWidth + 'px';
-      currentFrame.style.height = newHeight + 'px';
-      
-      // 将遮罩层的大小和位置应用到样式中
-      overlay.style.width = newWidth + 'px';
-      overlay.style.height = newHeight + 'px';
-      overlay.style.top = currentFrame.offsetTop + 'px';
-      overlay.style.left = currentFrame.offsetLeft + 'px';
-    }
-  });
-    </script>
-  </body>
-</html>
+  );
+}
+
+export default CustomPortal;
