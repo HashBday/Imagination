@@ -5,35 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hacker Browser</title>
     <style>
-      /* 设置页面背景颜色为黑色，字体颜色为绿色 */
+      /* 设置页面背景颜色为白色，字体颜色为黑色 */
       body {
-        background-color: black;
-        color: #00ff00;
-        font-family: "Courier New", Courier, monospace;
-      }
-      
-      /* 添加黑客帝国风格的图标 */
-      .icon {
-        background-image: url("https://cdn-icons-png.flaticon.com/512/23/23728.png");
-        background-size: cover;
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-      }
-      
-      /* 添加黑客帝国风格的按钮 */
-      .button {
-        background-color: #4caf50;
-        border: none;
+        background-color: white;
         color: black;
-        padding: 10px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
-        margin: 4px 2px;
-        cursor: pointer;
-        border-radius: 8px;
+        font-family: Arial, sans-serif;
       }
       
       /* 设置iframe的样式 */
@@ -43,7 +19,7 @@
         border: none;
       }
       
-      /* 添加黑客帝国风格的边框 */
+      /* 添加iframe容器的样式 */
       .frame-container {
         position: absolute;
         top: 0;
@@ -53,27 +29,19 @@
         overflow: hidden;
       }
       
-      .frame-container iframe {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        cursor: move;
-        z-index: 1;
-      }
-      
+      /* 添加遮罩层的样式 */
       .overlay {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(255, 255, 255, 0.8);
         z-index: 2;
         display: none;
       }
       
+      /* 添加调整大小的手柄的样式 */
       .resize-handle {
         position: absolute;
         width: 20px;
@@ -86,20 +54,47 @@
     </style>
   </head>
   <body>
-    <!-- 添加黑客帝国风格的标题和图标 -->
-    <h1>
-      <span class="icon"></span>
-      Hacker Browser
-    </h1>
+    <!-- 添加标题 -->
+    <h1>Hacker Browser</h1>
     <!-- 添加用户输入网址的表单 -->
     <form>
       <label for="url">Enter URL:</label>
       <input type="text" id="url" name="url" />
-      <button type="submit" class="button">Go</button>
+      <button type="submit">Go</button>
     </form>
     <!-- 添加显示网页的iframe -->
     <div class="frame-container">
       <iframe class="frame" id="frame0"></iframe>
       <div class="overlay"></div>
       <div class="resize-handle"></div>
-    </
+    </div>
+    <!-- 添加添加新网页的按钮 -->
+    <button id="add-button">Add Website</button>
+    
+    <script>
+      const addButton = document.getElementById('add-button');
+      const frameContainer = document.querySelector('.frame-container');
+      let frameCount = 1;
+      
+      // 点击“Add Website”按钮时，在frameContainer中添加一个新的iframe
+      addButton.addEventListener('click', () => {
+        const newFrame = document.createElement('iframe');
+        newFrame.classList.add('frame');
+        newFrame.id = 'frame' + frameCount;
+        frameCount++;
+        frameContainer.appendChild(newFrame);
+      });
+      
+      // 提交表单时，将输入的网址加载到当前的iframe中
+      const form = document.querySelector('form');
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const url = document.getElementById('url').value;
+        const currentFrame = document.querySelector('.frame-container iframe:not(.overlay)');
+        currentFrame.src = url;
+      });
+      
+      // 点击iframe上的遮罩层时，隐藏遮罩层
+      const overlay = document.querySelector('.overlay');
+      overlay.addEventListener('click', () => {
+        overlay.style.display
