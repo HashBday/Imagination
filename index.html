@@ -98,3 +98,56 @@
       const overlay = document.querySelector('.overlay');
       overlay.addEventListener('click', () => {
         overlay.style.display
+  'none';
+  });
+  
+  // 拖拽调整iframe大小
+  const resizeHandle = document.querySelector('.resize-handle');
+  let isResizing = false;
+  
+  // 开始拖拽时记录鼠标位置和iframe大小
+  resizeHandle.addEventListener('mousedown', (event) => {
+    isResizing = true;
+    const currentFrame = event.target.parentElement.querySelector('iframe');
+    const { offsetWidth, offsetHeight } = currentFrame;
+    const initialX = event.clientX;
+    const initialY = event.clientY;
+    const initialWidth = offsetWidth;
+    const initialHeight = offsetHeight;
+    
+    // 显示遮罩层
+    overlay.style.display = 'block';
+    
+    // 鼠标移动时调整iframe大小
+    document.addEventListener('mousemove', resize);
+    
+    // 结束拖拽时移除事件监听器
+    document.addEventListener('mouseup', () => {
+      isResizing = false;
+      overlay.style.display = 'none';
+      document.removeEventListener('mousemove', resize);
+    });
+    
+    function resize(event) {
+      if (!isResizing) return;
+      
+      // 计算鼠标移动距离和调整后的iframe大小
+      const dx = event.clientX - initialX;
+      const dy = event.clientY - initialY;
+      const newWidth = initialWidth + dx;
+      const newHeight = initialHeight + dy;
+      
+      // 将新的iframe大小应用到样式中
+      currentFrame.style.width = newWidth + 'px';
+      currentFrame.style.height = newHeight + 'px';
+      
+      // 将遮罩层的大小和位置应用到样式中
+      overlay.style.width = newWidth + 'px';
+      overlay.style.height = newHeight + 'px';
+      overlay.style.top = currentFrame.offsetTop + 'px';
+      overlay.style.left = currentFrame.offsetLeft + 'px';
+    }
+  });
+    </script>
+  </body>
+</html>
